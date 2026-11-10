@@ -5,8 +5,9 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 from sqlalchemy import text
 from app.core.config import settings
+from app.database.bootstrap import ensure_initial_records
 from app.database.migrate import migrate_schema
-from app.database.session import engine
+from app.database.session import SessionLocal, engine
 from app.api import (
     auth, profile, social_links, skills, projects,
     certifications, experience, education, achievements,
@@ -18,6 +19,11 @@ from app.api import (
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     migrate_schema()
+    db = SessionLocal()
+    try:
+        ensure_initial_records(db)
+    finally:
+        db.close()
     yield
 
 

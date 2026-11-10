@@ -3,11 +3,14 @@ from datetime import datetime, timedelta, timezone
 from fastapi.testclient import TestClient
 from fastapi.routing import APIRoute
 from jose import jwt
+from sqlalchemy import create_engine
+from sqlalchemy.orm import sessionmaker
 from main import app
 from app.core.config import settings
 from app.api.deps import get_current_active_admin
-from app.database.session import SessionLocal
-from app.models.models import ContactMessage
+from app.database.bootstrap import ensure_initial_records
+from app.database.session import Base, SessionLocal
+from app.models.models import ContactMessage, Profile, SiteSetting, User
 
 client = TestClient(app)
 
@@ -234,3 +237,28 @@ def test_admin_login_is_disabled_without_backend_configuration(monkeypatch):
     monkeypatch.setattr(settings, "ADMIN_NAME", None)
     response = client.post("/api/auth/login", json={"admin_name": "test-admin-name"})
     assert response.status_code == 401
+
+
+def test_initial_records_are_created_only_when_missing(monkeypatch):
+    monkeypatch.setattr(settings, "ADMIN_NAME", "test-admin-name")
+    monkeypatch.setattr(settings, "ADMIN_EMAIL", "bootstrap-test@example.invalid")
+    monkeypatch.setattr(settings, "ADMIN_USERNAME", "bootstrap-test-admin")
+
+    engine = create_engine("sqlite:///:memory:")
+    Base.metadata.create_all(bind=engine)
+    test_session = sessionmaker(bind=engine)()
+    try:
+        ensure_initial_records(test_session)
+        profile = test_session.query(Profile).one()
+        profile.full_name = "Existing Portfolio Owner"
+        test_session.commit()
+
+        ensure_initial_records(test_session)
+
+        assert test_session.query(Profile).count() == 1
+        assert test_session.query(Profile).one().full_name == "Existing Portfolio Owner"
+        assert test_session.query(SiteSetting).count() == 1
+        assert test_session.query(User).filter(User.role == "admin").count() == 1
+    finally:
+        test_session.close()
+        engine.dispose()
