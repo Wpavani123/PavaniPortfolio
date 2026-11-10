@@ -24,6 +24,7 @@ backend/uploads/*
 # Node / Next.js
 node_modules/
 .next/
+.netlify/
 out/
 coverage/
 npm-debug.log*

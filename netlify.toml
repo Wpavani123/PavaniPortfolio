@@ -5,3 +5,6 @@ publish = ".next"
 
 [build.environment]
 NEXT_PUBLIC_API_URL = "https://pavani-portfolio-api.onrender.com/api"
+
+[[plugins]]
+package = "@netlify/plugin-nextjs"
