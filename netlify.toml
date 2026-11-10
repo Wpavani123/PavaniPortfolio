@@ -4,7 +4,7 @@ command = "npm run build"
 publish = ".next"
 
 [build.environment]
-NEXT_PUBLIC_API_URL = "https://pavani-portfolio-api.onrender.com/api"
+NEXT_PUBLIC_API_URL = "https://pavaniportfolio.onrender.com/api"
 
 [[plugins]]
 package = "@netlify/plugin-nextjs"
