@@ -15,8 +15,9 @@ class TokenData(BaseModel):
 
 
 class LoginRequest(BaseModel):
-    username_or_email: str
-    password: str
+    admin_name: str = Field(min_length=1, max_length=256)
+
+    model_config = ConfigDict(extra="forbid")
 
 
 class UserOut(BaseModel):

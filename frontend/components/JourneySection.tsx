@@ -28,6 +28,8 @@ export default function JourneySection({
   github,
   youtube,
 }: JourneySectionProps) {
+  if (!github && !leetcode && !youtube) return null;
+
   return (
     <section id="journey" className="py-20 relative">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -47,6 +49,7 @@ export default function JourneySection({
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
           {/* Card 1: GitHub Hub */}
+          {github && (
           <GlassCard className="p-6 flex flex-col justify-between border-slate-700/40">
             <div>
               <div className="flex items-center justify-between gap-3 mb-5">
@@ -54,45 +57,24 @@ export default function JourneySection({
                   <Github className="w-5 h-5" />
                 </div>
                 <a
-                  href={github?.profile_url || 'https://github.com/Wpavani123'}
+                  href={github.profile_url}
                   target="_blank"
                   rel="noopener noreferrer"
                   className="text-xs text-cyan-400 hover:text-cyan-300 flex items-center gap-1 font-mono"
                 >
-                  @{github?.username || 'Wpavani123'}
+                  @{github.username}
                   <ExternalLink className="w-3.5 h-3.5" />
                 </a>
               </div>
 
               <h3 className="font-bold text-lg text-slate-100 mb-2">GitHub Repositories</h3>
               <p className="text-xs text-slate-400 mb-5 leading-relaxed">
-                {github?.bio ||
-                  'AWS Certified Cloud/DevOps Enthusiast building scalable cloud infrastructure.'}
+                {github.bio}
               </p>
 
               {/* Pinned Repos */}
               <div className="space-y-3 mb-6">
-                {(github?.pinned_repos && github.pinned_repos.length > 0
-                  ? github.pinned_repos
-                  : [
-                      {
-                        name: 'aws-cloud-web-server',
-                        description: 'Apache Web Server on AWS EC2 inside a custom VPC with CloudWatch metrics.',
-                        language: 'HCL / Shell',
-                        stars: 0,
-                        forks: 0,
-                        url: 'https://github.com/Wpavani123',
-                      },
-                      {
-                        name: 'python-cloud-automation',
-                        description: 'Python automation scripts for AWS resource audits and S3 bucket operations.',
-                        language: 'Python',
-                        stars: 0,
-                        forks: 0,
-                        url: 'https://github.com/Wpavani123',
-                      },
-                    ]
-                ).map((repo, i) => (
+                {(github.pinned_repos || []).map((repo, i) => (
                   <div
                     key={i}
                     className="p-3 rounded-xl bg-slate-900/60 border border-slate-800 text-xs hover:border-slate-700 transition-colors"
@@ -125,11 +107,13 @@ export default function JourneySection({
 
             <div className="pt-4 border-t border-slate-800 flex items-center justify-between text-xs font-mono text-slate-400">
               <span>Public Repositories:</span>
-              <span className="text-white font-bold">{github?.public_repos ?? 8}</span>
+              <span className="text-white font-bold">{github.public_repos ?? '—'}</span>
             </div>
           </GlassCard>
+          )}
 
           {/* Card 2: LeetCode Hub */}
+          {leetcode && (
           <GlassCard className="p-6 flex flex-col justify-between border-slate-700/40">
             <div>
               <div className="flex items-center justify-between gap-3 mb-5">
@@ -137,7 +121,7 @@ export default function JourneySection({
                   <Code2 className="w-5 h-5" />
                 </div>
                 <a
-                  href={leetcode?.profile_url || 'https://leetcode.com/'}
+                  href={leetcode.profile_url || '#'}
                   target="_blank"
                   rel="noopener noreferrer"
                   className="text-xs text-amber-400 hover:text-amber-300 flex items-center gap-1 font-mono"
@@ -179,10 +163,10 @@ export default function JourneySection({
                   <Clock className="w-8 h-8 text-amber-400/80 mx-auto animate-pulse" />
                   <div>
                     <h4 className="font-bold text-sm text-slate-200">
-                      {leetcode?.journey_status || 'LeetCode Journey Coming Soon'}
+                      {leetcode.journey_status || 'No activity details published.'}
                     </h4>
                     <p className="text-xs text-slate-500 mt-1">
-                      Currently practicing Python arrays, strings, two-pointers, and hash table problem patterns. Stats will sync dynamically.
+                      No problem-solving statistics are available.
                     </p>
                   </div>
                 </div>
@@ -193,11 +177,13 @@ export default function JourneySection({
               <span className="flex items-center gap-1">
                 <Flame className="w-3.5 h-3.5 text-amber-400" /> Current Streak:
               </span>
-              <span className="text-slate-200 font-bold">{leetcode?.streak ?? 0} days</span>
+              <span className="text-slate-200 font-bold">{leetcode.streak ?? '—'} days</span>
             </div>
           </GlassCard>
+          )}
 
           {/* Card 3: YouTube Hub */}
+          {youtube && (
           <GlassCard className="p-6 flex flex-col justify-between border-slate-700/40">
             <div>
               <div className="flex items-center justify-between gap-3 mb-5">
@@ -205,7 +191,7 @@ export default function JourneySection({
                   <Youtube className="w-5 h-5" />
                 </div>
                 <a
-                  href={youtube?.channel_url || 'https://youtube.com/'}
+                  href={youtube.channel_url || '#'}
                   target="_blank"
                   rel="noopener noreferrer"
                   className="text-xs text-rose-400 hover:text-rose-300 flex items-center gap-1 font-mono"
@@ -216,7 +202,7 @@ export default function JourneySection({
               </div>
 
               <h3 className="font-bold text-lg text-slate-100 mb-2">
-                {youtube?.channel_name || 'Nimmana Pavani Tech'}
+                {youtube.channel_name}
               </h3>
 
               {youtube?.videos && youtube.videos.length > 0 ? (
@@ -249,10 +235,10 @@ export default function JourneySection({
                   <Youtube className="w-8 h-8 text-rose-400/80 mx-auto animate-pulse" />
                   <div>
                     <h4 className="font-bold text-sm text-slate-200">
-                      YouTube Content Coming Soon
+                      No videos published.
                     </h4>
                     <p className="text-xs text-slate-500 mt-1">
-                      Upcoming technical tutorials, AWS walk-throughs, and DevOps deployment guides. Videos will appear dynamically.
+                      No video entries are available.
                     </p>
                   </div>
                 </div>
@@ -261,9 +247,10 @@ export default function JourneySection({
 
             <div className="pt-4 border-t border-slate-800 flex items-center justify-between text-xs font-mono text-slate-400">
               <span>Subscribers:</span>
-              <span className="text-slate-200 font-bold">{youtube?.subscriber_count ?? 0}</span>
+              <span className="text-slate-200 font-bold">{youtube.subscriber_count ?? '—'}</span>
             </div>
           </GlassCard>
+          )}
         </div>
       </div>
     </section>

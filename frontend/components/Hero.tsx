@@ -7,15 +7,10 @@ import {
   Download,
   FolderGit2,
   Mail,
-  Linkedin,
-  Github,
   Cloud,
-  Terminal,
-  Shield,
-  Server,
   ArrowRight,
 } from 'lucide-react';
-import { Profile } from '@/lib/types';
+import { Profile, Skill, SocialLink } from '@/lib/types';
 
 // Dynamically import 3D scene so it does not block initial page render
 const Scene3D = dynamic(() => import('./Scene3D'), {
@@ -29,16 +24,15 @@ const Scene3D = dynamic(() => import('./Scene3D'), {
 
 interface HeroProps {
   profile?: Profile | null;
-  resumeUrl?: string;
+  socials?: SocialLink[];
+  skills?: Skill[];
+  resumeUrl?: string | null;
 }
 
-export default function Hero({ profile, resumeUrl = '#resume' }: HeroProps) {
-  const headline = profile?.full_name || 'Nimmana Pavani';
-  const subheadline =
-    profile?.headline || 'AWS | Cloud | DevOps | Python | AI Enthusiast';
-  const description =
-    profile?.short_bio ||
-    'Cloud-focused Computer Science graduate with hands-on experience in AWS, Linux, Python and DevOps technologies, building secure, scalable and cloud-based solutions.';
+export default function Hero({ profile, socials, skills, resumeUrl }: HeroProps) {
+  const headline = profile?.full_name || '';
+  const subheadline = profile?.headline || '';
+  const description = profile?.short_bio || '';
 
   return (
     <section className="relative min-h-[92vh] flex items-center justify-center pt-24 pb-16 overflow-hidden">
@@ -62,7 +56,7 @@ export default function Hero({ profile, resumeUrl = '#resume' }: HeroProps) {
             className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full glass-panel border-cyan-500/30 text-xs font-mono text-cyan-500 dark:text-cyan-400 shadow-sm"
           >
             <span className="w-2 h-2 rounded-full bg-emerald-400 animate-ping inline-block" />
-            <span>AWS Certified Solutions Architect &bull; Open for Opportunities</span>
+            <span>{profile?.professional_title}</span>
           </motion.div>
 
           {/* Name & Headline */}
@@ -96,18 +90,13 @@ export default function Hero({ profile, resumeUrl = '#resume' }: HeroProps) {
             transition={{ duration: 0.5, delay: 0.3 }}
             className="flex flex-wrap items-center justify-center lg:justify-start gap-2 pt-1"
           >
-            {[
-              { icon: Cloud, label: 'AWS Architecture (EC2, VPC, IAM)' },
-              { icon: Terminal, label: 'Linux Automation' },
-              { icon: Server, label: 'DevOps & CI/CD' },
-              { icon: Shield, label: 'Cloud Security & Watch' },
-            ].map((pill, i) => (
+            {skills?.slice(0, 4).map((skill) => (
               <span
-                key={i}
+                key={skill.id}
                 className="flex items-center gap-1.5 text-xs font-medium px-3 py-1 rounded-lg glass-panel text-slate-700 dark:text-slate-300 border-slate-700/30"
               >
-                <pill.icon className="w-3.5 h-3.5 text-cyan-400" />
-                {pill.label}
+                <Cloud className="w-3.5 h-3.5 text-cyan-400" />
+                {skill.name}
               </span>
             ))}
           </motion.div>
@@ -128,15 +117,17 @@ export default function Hero({ profile, resumeUrl = '#resume' }: HeroProps) {
               <ArrowRight className="w-4 h-4" />
             </a>
 
-            <a
-              href={resumeUrl}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="flex items-center gap-2 px-5 py-3 rounded-xl glass-panel text-slate-800 dark:text-slate-100 hover:text-cyan-400 text-sm font-semibold border-slate-600/40 hover:border-cyan-500/50 transition-all hover:scale-[1.02] active:scale-[0.98]"
-            >
-              <Download className="w-4 h-4 text-cyan-400" />
-              Download Resume
-            </a>
+            {resumeUrl && (
+              <a
+                href={resumeUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="flex items-center gap-2 px-5 py-3 rounded-xl glass-panel text-slate-800 dark:text-slate-100 hover:text-cyan-400 text-sm font-semibold border-slate-600/40 hover:border-cyan-500/50 transition-all hover:scale-[1.02] active:scale-[0.98]"
+              >
+                <Download className="w-4 h-4 text-cyan-400" />
+                Download Resume
+              </a>
+            )}
 
             <a
               href="#contact"
@@ -155,31 +146,18 @@ export default function Hero({ profile, resumeUrl = '#resume' }: HeroProps) {
             className="flex items-center justify-center lg:justify-start gap-3 pt-3"
           >
             <span className="text-xs text-slate-400 font-mono">Connect:</span>
-            <a
-              href="https://www.linkedin.com/in/pavani-nimmana-67b989283"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="p-2 rounded-lg glass-panel hover:text-cyan-400 transition-colors"
-              title="LinkedIn"
-            >
-              <Linkedin className="w-4 h-4" />
-            </a>
-            <a
-              href="https://github.com/Wpavani123"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="p-2 rounded-lg glass-panel hover:text-cyan-400 transition-colors"
-              title="GitHub"
-            >
-              <Github className="w-4 h-4" />
-            </a>
-            <a
-              href="mailto:pavaninimmana10@gmail.com"
-              className="p-2 rounded-lg glass-panel hover:text-cyan-400 transition-colors"
-              title="Email directly"
-            >
-              <Mail className="w-4 h-4" />
-            </a>
+            {socials?.filter((link) => link.is_visible).map((link) => (
+              <a
+                key={link.id}
+                href={link.url}
+                target={link.url.startsWith('http') ? '_blank' : undefined}
+                rel={link.url.startsWith('http') ? 'noopener noreferrer' : undefined}
+                className="px-2.5 py-2 rounded-lg glass-panel hover:text-cyan-400 transition-colors text-xs"
+                title={link.platform}
+              >
+                {link.platform}
+              </a>
+            ))}
           </motion.div>
         </div>
 
@@ -199,7 +177,7 @@ export default function Hero({ profile, resumeUrl = '#resume' }: HeroProps) {
                 <div className="w-full h-full bg-slate-900 rounded-2xl flex flex-col items-center justify-center text-center p-3 relative overflow-hidden">
                   <Cloud className="w-10 h-10 text-cyan-400 mb-1" />
                   <span className="text-[10px] font-mono text-slate-300 font-semibold uppercase tracking-wider">
-                    Cloud Architect
+                    {profile?.professional_title}
                   </span>
                 </div>
               </div>
@@ -207,33 +185,29 @@ export default function Hero({ profile, resumeUrl = '#resume' }: HeroProps) {
               {/* Identity & Credentials */}
               <div className="text-center space-y-1.5 mb-5">
                 <h3 className="font-bold text-lg text-slate-900 dark:text-white">
-                  Nimmana Pavani
+                  {profile?.full_name}
                 </h3>
                 <p className="text-xs text-cyan-500 dark:text-cyan-400 font-mono">
-                  B.Tech CSE &bull; AWS Certified
+                  {profile?.professional_title}
                 </p>
                 <p className="text-xs text-slate-500 dark:text-slate-400">
-                  Srikakulam, Andhra Pradesh
+                  {profile?.location}
                 </p>
               </div>
 
               {/* Quick Spec Highlights */}
               <div className="space-y-2.5 pt-4 border-t border-slate-700/40 text-xs">
                 <div className="flex justify-between items-center text-slate-400">
-                  <span>Certification:</span>
-                  <span className="font-semibold text-emerald-400 font-mono">AWS SAA-C03</span>
+                  <span>Headline:</span>
+                  <span className="font-semibold text-emerald-400 font-mono">{profile?.headline}</span>
                 </div>
                 <div className="flex justify-between items-center text-slate-400">
-                  <span>Core Cloud:</span>
-                  <span className="font-medium text-slate-200">EC2 &bull; VPC &bull; IAM</span>
+                  <span>Email:</span>
+                  <span className="font-medium text-slate-200">{profile?.email}</span>
                 </div>
                 <div className="flex justify-between items-center text-slate-400">
-                  <span>Automation:</span>
-                  <span className="font-medium text-slate-200">Linux &bull; Python</span>
-                </div>
-                <div className="flex justify-between items-center text-slate-400">
-                  <span>Daily Learning:</span>
-                  <span className="font-medium text-cyan-400">Active DSA & Terraform</span>
+                  <span>Phone:</span>
+                  <span className="font-medium text-slate-200">{profile?.phone}</span>
                 </div>
               </div>
             </div>

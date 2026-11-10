@@ -94,10 +94,17 @@ export default function AdminDashboardPage() {
   useEffect(() => {
     const token = localStorage.getItem('token');
     if (!token) {
-      router.push('/admin/login');
+      router.replace('/admin/login');
       return;
     }
-    loadAllData();
+
+    api.getMe()
+      .then(() => loadAllData())
+      .catch(() => {
+        localStorage.removeItem('token');
+        localStorage.removeItem('user');
+        router.replace('/admin/login');
+      });
   }, [router]);
 
   const showNotification = (message: string, type: 'success' | 'error' = 'success') => {

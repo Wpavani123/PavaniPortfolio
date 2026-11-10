@@ -3,8 +3,10 @@ from contextlib import asynccontextmanager
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
+from sqlalchemy import text
 from app.core.config import settings
-from app.database.seed import seed_db
+from app.database.migrate import migrate_schema
+from app.database.session import engine
 from app.api import (
     auth, profile, social_links, skills, projects,
     certifications, experience, education, achievements,
@@ -15,13 +17,8 @@ from app.api import (
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    # Startup: Ensure DB tables and initial resume seed data exist
-    try:
-        seed_db()
-    except Exception as e:
-        print(f"Warning: Database seeding encountered: {e}")
+    migrate_schema()
     yield
-    # Shutdown logic if needed
 
 
 app = FastAPI(
@@ -84,4 +81,6 @@ def root():
 
 @app.get("/api/health")
 def health_check():
-    return {"status": "healthy", "version": settings.VERSION}
+    with engine.connect() as connection:
+        connection.execute(text("SELECT 1"))
+    return {"status": "healthy", "database": "connected", "version": settings.VERSION}

@@ -21,7 +21,10 @@ import {
   User,
 } from './types';
 
-const API_BASE = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000/api';
+const API_BASE = (
+  process.env.NEXT_PUBLIC_API_URL ||
+  (process.env.NODE_ENV === 'development' ? 'http://localhost:8000/api' : '')
+).replace(/\/+$/, '');
 
 class ApiClient {
   private getAuthHeaders(): HeadersInit {
@@ -151,11 +154,11 @@ class ApiClient {
   }
 
   // --- Admin Authentication ---
-  async login(username_or_email: string, password: string): Promise<{ access_token: string; user: User }> {
+  async login(admin_name: string): Promise<{ access_token: string; user: User }> {
     const res = await fetch(`${API_BASE}/auth/login`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ username_or_email, password }),
+      body: JSON.stringify({ admin_name }),
     });
     if (!res.ok) {
       const err = await res.json();

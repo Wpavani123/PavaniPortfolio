@@ -2,17 +2,16 @@
 
 import React, { useState } from 'react';
 import GlassCard from './GlassCard';
-import { Mail, Phone, Linkedin, Github, Send, CheckCircle2, AlertCircle, Loader2 } from 'lucide-react';
-import { Profile } from '@/lib/types';
+import { Mail, Phone, ExternalLink, Send, CheckCircle2, AlertCircle, Loader2 } from 'lucide-react';
+import { Profile, SocialLink } from '@/lib/types';
 import { api } from '@/lib/api';
 
 interface ContactSectionProps {
   profile?: Profile | null;
+  socials?: SocialLink[];
 }
 
-export default function ContactSection({ profile }: ContactSectionProps) {
-  const email = profile?.email || 'pavaninimmana10@gmail.com';
-  const phone = profile?.phone || '+91-8121082482';
+export default function ContactSection({ profile, socials }: ContactSectionProps) {
 
   const [formData, setFormData] = useState({
     name: '',
@@ -72,8 +71,8 @@ export default function ContactSection({ profile }: ContactSectionProps) {
 
               {/* Direct Info */}
               <div className="space-y-4">
-                <a
-                  href={`mailto:${email}`}
+                {profile?.email && <a
+                  href={`mailto:${profile.email}`}
                   className="flex items-center gap-4 p-3.5 rounded-xl bg-slate-900/60 border border-slate-800 hover:border-cyan-500/40 transition-colors group"
                 >
                   <div className="w-10 h-10 rounded-lg bg-cyan-500/10 flex items-center justify-center text-cyan-400 group-hover:scale-105 transition-transform">
@@ -84,13 +83,13 @@ export default function ContactSection({ profile }: ContactSectionProps) {
                       Email Address
                     </span>
                     <span className="text-sm font-semibold text-slate-200 group-hover:text-cyan-400 transition-colors">
-                      {email}
+                      {profile.email}
                     </span>
                   </div>
-                </a>
+                </a>}
 
-                <a
-                  href={`tel:${phone.replace(/\s+/g, '')}`}
+                {profile?.phone && <a
+                  href={`tel:${profile.phone.replace(/\s+/g, '')}`}
                   className="flex items-center gap-4 p-3.5 rounded-xl bg-slate-900/60 border border-slate-800 hover:border-emerald-500/40 transition-colors group"
                 >
                   <div className="w-10 h-10 rounded-lg bg-emerald-500/10 flex items-center justify-center text-emerald-400 group-hover:scale-105 transition-transform">
@@ -101,46 +100,40 @@ export default function ContactSection({ profile }: ContactSectionProps) {
                       Direct Phone
                     </span>
                     <span className="text-sm font-semibold text-slate-200 group-hover:text-emerald-400 transition-colors">
-                      {phone}
+                      {profile.phone}
                     </span>
                   </div>
-                </a>
+                </a>}
               </div>
 
               {/* Action Buttons: Email Me, Call Me, LinkedIn, GitHub */}
               <div className="grid grid-cols-2 gap-3 pt-2">
-                <a
-                  href={`mailto:${email}`}
+                {profile?.email && <a
+                  href={`mailto:${profile.email}`}
                   className="py-2.5 px-3 rounded-xl bg-gradient-to-r from-cyan-500 to-blue-600 text-white text-xs font-semibold flex items-center justify-center gap-1.5 shadow-md shadow-cyan-500/20 hover:scale-[1.02] active:scale-[0.98] transition-all"
                 >
                   <Mail className="w-3.5 h-3.5" />
                   Email Me
-                </a>
-                <a
-                  href={`tel:${phone.replace(/\s+/g, '')}`}
+                </a>}
+                {profile?.phone && <a
+                  href={`tel:${profile.phone.replace(/\s+/g, '')}`}
                   className="py-2.5 px-3 rounded-xl glass-panel text-slate-200 hover:text-emerald-400 text-xs font-semibold flex items-center justify-center gap-1.5 hover:scale-[1.02] active:scale-[0.98] transition-all"
                 >
                   <Phone className="w-3.5 h-3.5 text-emerald-400" />
                   Call Me
-                </a>
-                <a
-                  href="https://www.linkedin.com/in/pavani-nimmana-67b989283"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="py-2.5 px-3 rounded-xl glass-panel text-slate-200 hover:text-blue-400 text-xs font-semibold flex items-center justify-center gap-1.5 hover:scale-[1.02] active:scale-[0.98] transition-all"
-                >
-                  <Linkedin className="w-3.5 h-3.5 text-blue-400" />
-                  LinkedIn
-                </a>
-                <a
-                  href="https://github.com/Wpavani123"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="py-2.5 px-3 rounded-xl glass-panel text-slate-200 hover:text-white text-xs font-semibold flex items-center justify-center gap-1.5 hover:scale-[1.02] active:scale-[0.98] transition-all"
-                >
-                  <Github className="w-3.5 h-3.5 text-slate-300" />
-                  GitHub
-                </a>
+                </a>}
+                {socials?.filter((link) => link.is_visible).map((link) => (
+                  <a
+                    key={link.id}
+                    href={link.url}
+                    target={link.url.startsWith('http') ? '_blank' : undefined}
+                    rel={link.url.startsWith('http') ? 'noopener noreferrer' : undefined}
+                    className="py-2.5 px-3 rounded-xl glass-panel text-slate-200 hover:text-cyan-400 text-xs font-semibold flex items-center justify-center gap-1.5 hover:scale-[1.02] active:scale-[0.98] transition-all"
+                  >
+                    <ExternalLink className="w-3.5 h-3.5" />
+                    {link.platform}
+                  </a>
+                ))}
               </div>
             </GlassCard>
           </div>

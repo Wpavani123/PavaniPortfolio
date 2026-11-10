@@ -12,11 +12,7 @@ router = APIRouter(prefix="/profile", tags=["Profile"])
 def get_profile(db: Session = Depends(get_db)):
     profile = db.query(Profile).first()
     if not profile:
-        # Create default profile if not exists
-        profile = Profile()
-        db.add(profile)
-        db.commit()
-        db.refresh(profile)
+        raise HTTPException(status_code=404, detail="Profile has not been configured")
     return profile
 
 

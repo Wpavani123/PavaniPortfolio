@@ -19,6 +19,8 @@ import ContactSection from '@/components/ContactSection';
 
 import {
   Profile,
+  SocialLink,
+  SiteSettings,
   Skill,
   SkillProgress,
   Project,
@@ -38,6 +40,8 @@ import { Loader2 } from 'lucide-react';
 
 export default function HomePage() {
   const [profile, setProfile] = useState<Profile | null>(null);
+  const [socialLinks, setSocialLinks] = useState<SocialLink[]>([]);
+  const [siteSettings, setSiteSettings] = useState<SiteSettings | null>(null);
   const [skills, setSkills] = useState<Skill[]>([]);
   const [progressLogs, setProgressLogs] = useState<SkillProgress[]>([]);
   const [projects, setProjects] = useState<Project[]>([]);
@@ -58,6 +62,8 @@ export default function HomePage() {
       try {
         const [
           profileRes,
+          socialLinksRes,
+          settingsRes,
           skillsRes,
           progressRes,
           projectsRes,
@@ -72,6 +78,8 @@ export default function HomePage() {
           resumeRes,
         ] = await Promise.allSettled([
           api.getProfile(),
+          api.getSocialLinks(),
+          api.getSiteSettings(),
           api.getSkills(),
           api.getSkillProgress(),
           api.getProjects(),
@@ -87,6 +95,8 @@ export default function HomePage() {
         ]);
 
         if (profileRes.status === 'fulfilled') setProfile(profileRes.value);
+        if (socialLinksRes.status === 'fulfilled') setSocialLinks(socialLinksRes.value);
+        if (settingsRes.status === 'fulfilled') setSiteSettings(settingsRes.value);
         if (skillsRes.status === 'fulfilled') setSkills(skillsRes.value);
         if (progressRes.status === 'fulfilled') setProgressLogs(progressRes.value);
         if (projectsRes.status === 'fulfilled') setProjects(projectsRes.value);
@@ -109,6 +119,13 @@ export default function HomePage() {
     loadPortfolioData();
   }, []);
 
+  useEffect(() => {
+    if (!siteSettings) return;
+    document.title = siteSettings.site_title;
+    const description = document.querySelector('meta[name="description"]');
+    description?.setAttribute('content', siteSettings.meta_description);
+  }, [siteSettings]);
+
   if (loading) {
     return (
       <div className="min-h-screen bg-slate-950 flex flex-col items-center justify-center text-cyan-400 space-y-4">
@@ -120,16 +137,32 @@ export default function HomePage() {
     );
   }
 
+  if (!profile) {
+    return (
+      <main className="min-h-screen bg-slate-950 flex items-center justify-center px-6 text-center">
+        <p className="max-w-xl text-sm text-slate-300">
+          Portfolio profile data was not returned by the API. Check
+          {' '}NEXT_PUBLIC_API_URL, backend health, and that a profile has been configured.
+        </p>
+      </main>
+    );
+  }
+
   return (
     <div className="relative min-h-screen">
-      <Navbar />
+      <Navbar profile={profile} />
 
       <main>
         {/* 1. Hero Section */}
-        <Hero profile={profile} resumeUrl={resolveResumeUrl(resume?.file_url)} />
+        <Hero
+          profile={profile}
+          socials={socialLinks}
+          skills={skills}
+          resumeUrl={resolveResumeUrl(resume?.file_url)}
+        />
 
         {/* 2. About Me */}
-        <AboutSection profile={profile} />
+        <AboutSection profile={profile} socials={socialLinks} />
 
         {/* 3. Core Skills */}
         <SkillsSection skills={skills} />
@@ -162,10 +195,10 @@ export default function HomePage() {
         <ResumeSection resume={resume} />
 
         {/* 13. Contact Me */}
-        <ContactSection profile={profile} />
+        <ContactSection profile={profile} socials={socialLinks} />
       </main>
 
-      <Footer profile={profile} />
+      <Footer profile={profile} socials={socialLinks} />
     </div>
   );
 }

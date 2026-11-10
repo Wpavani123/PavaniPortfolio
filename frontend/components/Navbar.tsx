@@ -5,7 +5,8 @@ import Link from 'next/link';
 import { Menu, X, Cloud, Terminal, Download, ShieldCheck } from 'lucide-react';
 import ThemeToggle from './ThemeToggle';
 import { api } from '@/lib/api';
-import { DEFAULT_RESUME_URL, resolveResumeUrl } from '@/lib/resume';
+import { resolveResumeUrl } from '@/lib/resume';
+import { Profile } from '@/lib/types';
 
 const navItems = [
   { label: 'About', href: '#about' },
@@ -20,10 +21,10 @@ const navItems = [
   { label: 'Contact', href: '#contact' },
 ];
 
-export default function Navbar() {
+export default function Navbar({ profile }: { profile?: Profile | null }) {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
-  const [resumeUrl, setResumeUrl] = useState(DEFAULT_RESUME_URL);
+  const [resumeUrl, setResumeUrl] = useState<string | null>(null);
 
   useEffect(() => {
     const handleScroll = () => {
@@ -39,7 +40,7 @@ export default function Navbar() {
         setResumeUrl(resolveResumeUrl(res?.file_url));
       })
       .catch((error) => {
-        console.error('Unable to load the latest resume URL; using the bundled resume.', error);
+        console.error('Unable to load the resume URL from the API.', error);
       });
   }, []);
 
@@ -59,11 +60,13 @@ export default function Navbar() {
           </div>
           <div>
             <span className="font-bold text-lg tracking-tight block leading-none">
-              Nimmana Pavani
+              {profile?.full_name || 'Portfolio'}
             </span>
-            <span className="text-[11px] font-mono text-cyan-500 dark:text-cyan-400 tracking-wider uppercase block mt-1">
-              AWS &bull; DevOps &bull; Cloud
-            </span>
+            {profile?.professional_title && (
+              <span className="text-[11px] font-mono text-cyan-500 dark:text-cyan-400 tracking-wider uppercase block mt-1">
+                {profile.professional_title}
+              </span>
+            )}
           </div>
         </Link>
 
@@ -84,15 +87,17 @@ export default function Navbar() {
         <div className="hidden sm:flex items-center gap-3">
           <ThemeToggle />
 
-          <a
-            href={resumeUrl}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-400 hover:to-blue-500 text-white text-xs font-semibold shadow-md shadow-cyan-500/20 transition-all hover:scale-[1.02] active:scale-[0.98]"
-          >
-            <Download className="w-3.5 h-3.5" />
-            Resume
-          </a>
+          {resumeUrl && (
+            <a
+              href={resumeUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-400 hover:to-blue-500 text-white text-xs font-semibold shadow-md shadow-cyan-500/20 transition-all hover:scale-[1.02] active:scale-[0.98]"
+            >
+              <Download className="w-3.5 h-3.5" />
+              Resume
+            </a>
+          )}
 
           <Link
             href="/admin"
@@ -130,15 +135,17 @@ export default function Navbar() {
             </a>
           ))}
           <div className="pt-3 border-t border-slate-700/50 flex items-center justify-between gap-3">
-            <a
-              href={resumeUrl}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="flex-1 text-center py-2.5 rounded-xl bg-cyan-500 text-white font-medium text-xs flex items-center justify-center gap-2"
-            >
-              <Download className="w-4 h-4" />
-              Download Resume
-            </a>
+            {resumeUrl && (
+              <a
+                href={resumeUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="flex-1 text-center py-2.5 rounded-xl bg-cyan-500 text-white font-medium text-xs flex items-center justify-center gap-2"
+              >
+                <Download className="w-4 h-4" />
+                Download Resume
+              </a>
+            )}
             <Link
               href="/admin"
               onClick={() => setMobileMenuOpen(false)}

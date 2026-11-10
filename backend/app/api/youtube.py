@@ -16,10 +16,7 @@ router = APIRouter(prefix="/youtube", tags=["YouTube"])
 def get_youtube_channel(db: Session = Depends(get_db)):
     channel = db.query(YouTubeChannel).first()
     if not channel:
-        channel = YouTubeChannel()
-        db.add(channel)
-        db.commit()
-        db.refresh(channel)
+        raise HTTPException(status_code=404, detail="YouTube channel has not been configured")
     return channel
 
 

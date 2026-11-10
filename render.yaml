@@ -21,9 +21,9 @@ services:
           name: pavani-portfolio-db
           property: connectionString
       - key: BACKEND_CORS_ORIGINS
-        value: http://localhost:3000
+        value: '["http://localhost:3000","http://127.0.0.1:3000"]'
       - key: BACKEND_CORS_ORIGIN_REGEX
-        value: 'https://.*\.netlify\.app$'
+        value: '^https://.*\.(netlify|vercel)\.app$'
 
 databases:
   - name: pavani-portfolio-db

@@ -1,7 +1,11 @@
 import os
-from typing import List, Union
+from pathlib import Path
+from typing import List
 from pydantic import AnyHttpUrl, field_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
+
+
+DEFAULT_DATABASE_PATH = Path(__file__).resolve().parents[2] / "portfolio.db"
 
 
 class Settings(BaseSettings):
@@ -15,7 +19,16 @@ class Settings(BaseSettings):
     ACCESS_TOKEN_EXPIRE_MINUTES: int = 60 * 24 * 7  # 7 days
 
     # Database
-    DATABASE_URL: str = "sqlite:///./portfolio.db"  # Default SQLite for instant zero-config startup; easily overridden with postgresql://...
+    DATABASE_URL: str = f"sqlite:///{DEFAULT_DATABASE_PATH.as_posix()}"
+
+    @field_validator("DATABASE_URL", mode="before")
+    @classmethod
+    def normalize_database_url(cls, value):
+        if isinstance(value, str) and value.startswith("postgres://"):
+            return value.replace("postgres://", "postgresql+psycopg2://", 1)
+        if isinstance(value, str) and value.startswith("postgresql://"):
+            return value.replace("postgresql://", "postgresql+psycopg2://", 1)
+        return value
 
     # CORS
     BACKEND_CORS_ORIGINS: List[str] = [
@@ -46,6 +59,7 @@ class Settings(BaseSettings):
     ADMIN_EMAIL: str = "your-email@example.com"
     ADMIN_USERNAME: str = "admin"
     ADMIN_INITIAL_PASSWORD: str = "replace-with-a-strong-password"
+    ADMIN_NAME: str | None = None
 
     model_config = SettingsConfigDict(
         env_file=".env",

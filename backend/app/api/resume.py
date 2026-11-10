@@ -14,16 +14,7 @@ router = APIRouter(prefix="/resume", tags=["Resume"])
 def get_active_resume(db: Session = Depends(get_db)):
     resume = db.query(ResumeFile).filter(ResumeFile.is_active == True).order_by(ResumeFile.uploaded_at.desc()).first()
     if not resume:
-        # Fallback placeholder or create entry
-        resume = ResumeFile(
-            file_name="Nimmana_Pavani_Resume.pdf",
-            file_url="/api/uploads/resumes/Nimmana_Pavani_Resume.pdf",
-            file_size=1024 * 180,
-            is_active=True,
-        )
-        db.add(resume)
-        db.commit()
-        db.refresh(resume)
+        raise HTTPException(status_code=404, detail="No resume has been configured")
     return resume
 
 

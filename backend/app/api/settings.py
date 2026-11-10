@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 from app.database.session import get_db
 from app.models.models import SiteSetting, User
@@ -12,10 +12,7 @@ router = APIRouter(prefix="/settings", tags=["Site Settings"])
 def get_site_settings(db: Session = Depends(get_db)):
     setting = db.query(SiteSetting).first()
     if not setting:
-        setting = SiteSetting()
-        db.add(setting)
-        db.commit()
-        db.refresh(setting)
+        raise HTTPException(status_code=404, detail="Site settings have not been configured")
     return setting
 
 

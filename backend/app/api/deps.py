@@ -27,6 +27,12 @@ def get_current_user(
             detail="Invalid or expired authentication token",
             headers={"WWW-Authenticate": "Bearer"},
         )
+    if payload.get("auth_method") != "admin_name":
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Authentication token is no longer valid",
+            headers={"WWW-Authenticate": "Bearer"},
+        )
     user_id: str = payload.get("sub")
     if not user_id:
         raise HTTPException(

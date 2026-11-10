@@ -1,7 +1,13 @@
 import pytest
+from datetime import datetime, timedelta, timezone
 from fastapi.testclient import TestClient
+from fastapi.routing import APIRoute
+from jose import jwt
 from main import app
 from app.core.config import settings
+from app.api.deps import get_current_active_admin
+from app.database.session import SessionLocal
+from app.models.models import ContactMessage
 
 client = TestClient(app)
 
@@ -72,17 +78,24 @@ def test_contact_submission():
     }
     res = client.post("/api/contact", json=payload)
     assert res.status_code == 201
-    assert res.json()["status"] == "New"
+    try:
+        assert res.json()["status"] == "New"
+    finally:
+        db = SessionLocal()
+        try:
+            db.query(ContactMessage).filter(ContactMessage.id == res.json()["id"]).delete()
+            db.commit()
+        finally:
+            db.close()
 
 
-def test_admin_auth_and_crud():
+def test_admin_auth_and_crud(monkeypatch):
+    monkeypatch.setattr(settings, "ADMIN_NAME", "test-admin-name")
+
     # 1. Login
     login_res = client.post(
         "/api/auth/login",
-        json={
-            "username_or_email": settings.ADMIN_EMAIL,
-            "password": settings.ADMIN_INITIAL_PASSWORD,
-        },
+        json={"admin_name": "test-admin-name"},
     )
     assert login_res.status_code == 200
     token_data = login_res.json()
@@ -92,7 +105,7 @@ def test_admin_auth_and_crud():
     # 2. Get Me
     me_res = client.get("/api/auth/me", headers=headers)
     assert me_res.status_code == 200
-    assert me_res.json()["email"] == settings.ADMIN_EMAIL
+    assert me_res.json()["role"] == "admin"
 
     # 3. Admin Stats
     stats_res = client.get("/api/admin/stats", headers=headers)
@@ -148,3 +161,76 @@ def test_admin_auth_and_crud():
 
     del_sec_res = client.delete(f"/api/custom-sections/{sec_id}", headers=headers)
     assert del_sec_res.status_code == 204
+
+
+def test_admin_login_requires_only_admin_name(monkeypatch):
+    monkeypatch.setattr(settings, "ADMIN_NAME", "test-admin-name")
+
+    accepted = client.post("/api/auth/login", json={"admin_name": "test-admin-name"})
+    assert accepted.status_code == 200
+    assert "test-admin-name" not in accepted.text
+
+    rejected = client.post("/api/auth/login", json={"admin_name": "wrong-name"})
+    assert rejected.status_code == 401
+
+    legacy_fields = client.post(
+        "/api/auth/login",
+        json={"admin_name": "test-admin-name", "password": "not-accepted"},
+    )
+    assert legacy_fields.status_code == 422
+
+
+def test_all_admin_write_routes_require_admin_auth():
+    public_write_routes = {("/api/auth/login", "POST"), ("/api/contact", "POST")}
+    write_methods = {"POST", "PUT", "PATCH", "DELETE"}
+
+    for route in app.routes:
+        if not isinstance(route, APIRoute):
+            continue
+        for method in route.methods & write_methods:
+            if (route.path, method) in public_write_routes:
+                continue
+            assert any(
+                dependency.call is get_current_active_admin
+                for dependency in route.dependant.dependencies
+            ), f"{method} {route.path} is missing admin authorization"
+
+
+def test_public_portfolio_read_remains_unauthenticated():
+    assert client.get("/api/profile").status_code == 200
+    assert client.get("/api/projects").status_code == 200
+
+
+def test_admin_read_routes_require_admin_auth():
+    private_routes = [
+        "/api/admin/stats",
+        "/api/auth/me",
+        "/api/contact/messages",
+        "/api/custom-sections/all",
+        "/api/resume/history",
+        "/api/social-links/all",
+    ]
+    for path in private_routes:
+        assert client.get(path).status_code == 401, f"GET {path} should require authentication"
+
+
+def test_legacy_admin_tokens_are_rejected():
+    token = jwt.encode(
+        {
+            "sub": "legacy-token-subject",
+            "exp": datetime.now(timezone.utc) + timedelta(minutes=5),
+        },
+        settings.SECRET_KEY,
+        algorithm=settings.ALGORITHM,
+    )
+    response = client.get(
+        "/api/admin/stats",
+        headers={"Authorization": f"Bearer {token}"},
+    )
+    assert response.status_code == 401
+
+
+def test_admin_login_is_disabled_without_backend_configuration(monkeypatch):
+    monkeypatch.setattr(settings, "ADMIN_NAME", None)
+    response = client.post("/api/auth/login", json={"admin_name": "test-admin-name"})
+    assert response.status_code == 401

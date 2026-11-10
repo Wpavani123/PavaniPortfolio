@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 from app.database.session import get_db
 from app.models.models import GitHubProfile, User
@@ -12,35 +12,7 @@ router = APIRouter(prefix="/github", tags=["GitHub"])
 def get_github_profile(db: Session = Depends(get_db)):
     profile = db.query(GitHubProfile).first()
     if not profile:
-        profile = GitHubProfile(
-            username="Wpavani123",
-            profile_url="https://github.com/Wpavani123",
-            bio="AWS Certified Cloud/DevOps Enthusiast building scalable cloud infrastructure.",
-            public_repos=8,
-            followers=1,
-            following=2,
-            pinned_repos=[
-                {
-                    "name": "aws-cloud-web-server",
-                    "description": "Automated deployment of an Apache Web Server on AWS EC2 inside a custom VPC with CloudWatch metrics.",
-                    "language": "HCL / Shell",
-                    "stars": 0,
-                    "forks": 0,
-                    "url": "https://github.com/Wpavani123",
-                },
-                {
-                    "name": "python-cloud-automation",
-                    "description": "Python automation scripts for AWS resource audits, S3 bucket cleanups, and cost monitoring.",
-                    "language": "Python",
-                    "stars": 0,
-                    "forks": 0,
-                    "url": "https://github.com/Wpavani123",
-                },
-            ]
-        )
-        db.add(profile)
-        db.commit()
-        db.refresh(profile)
+        raise HTTPException(status_code=404, detail="GitHub profile has not been configured")
     return profile
 
 

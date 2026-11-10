@@ -3,13 +3,12 @@
 import React, { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
-import { Cloud, Lock, Mail, ArrowRight, Loader2, AlertCircle, ArrowLeft } from 'lucide-react';
+import { Cloud, UserRound, ArrowRight, Loader2, AlertCircle, ArrowLeft } from 'lucide-react';
 import { api } from '@/lib/api';
 
 export default function AdminLoginPage() {
   const router = useRouter();
-  const [usernameOrEmail, setUsernameOrEmail] = useState('');
-  const [password, setPassword] = useState('');
+  const [adminName, setAdminName] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
 
@@ -19,12 +18,12 @@ export default function AdminLoginPage() {
     setError('');
 
     try {
-      const res = await api.login(usernameOrEmail, password);
+      const res = await api.login(adminName);
       localStorage.setItem('token', res.access_token);
       localStorage.setItem('user', JSON.stringify(res.user));
       router.push('/admin');
     } catch (err: any) {
-      setError(err.message || 'Invalid email or password');
+      setError(err.message || 'Invalid Admin Name');
     } finally {
       setLoading(false);
     }
@@ -47,10 +46,10 @@ export default function AdminLoginPage() {
         </div>
 
         <h2 className="text-2xl font-bold tracking-tight text-white">
-          Admin Career Management CMS
+          Portfolio Admin CMS
         </h2>
         <p className="mt-1 text-xs text-slate-400 font-mono">
-          Authorized Management Portal for Nimmana Pavani
+          Authorized management portal
         </p>
       </div>
 
@@ -66,34 +65,18 @@ export default function AdminLoginPage() {
           <form onSubmit={handleLogin} className="space-y-4">
             <div>
               <label className="block text-xs font-mono text-slate-400 mb-1.5">
-                Admin Email or Username
+                Admin Name
               </label>
               <div className="relative">
-                <Mail className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-slate-500" />
+                <UserRound className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-slate-500" />
                 <input
                   type="text"
                   required
-                  value={usernameOrEmail}
-                  onChange={(e) => setUsernameOrEmail(e.target.value)}
+                  autoComplete="off"
+                  value={adminName}
+                  onChange={(e) => setAdminName(e.target.value)}
                   className="w-full pl-9 pr-4 py-2.5 rounded-xl glass-input text-xs sm:text-sm text-slate-200"
-                  placeholder="admin@example.com"
-                />
-              </div>
-            </div>
-
-            <div>
-              <label className="block text-xs font-mono text-slate-400 mb-1.5">
-                Password
-              </label>
-              <div className="relative">
-                <Lock className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-slate-500" />
-                <input
-                  type="password"
-                  required
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  className="w-full pl-9 pr-4 py-2.5 rounded-xl glass-input text-xs sm:text-sm text-slate-200"
-                  placeholder="••••••••••••"
+                  placeholder="Enter admin name"
                 />
               </div>
             </div>
@@ -106,7 +89,7 @@ export default function AdminLoginPage() {
               {loading ? (
                 <>
                   <Loader2 className="w-4 h-4 animate-spin" />
-                  Verifying Credentials...
+                  Verifying...
                 </>
               ) : (
                 <>

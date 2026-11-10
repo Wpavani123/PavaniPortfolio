@@ -11,19 +11,16 @@ import {
   TrendingDown,
   Mail,
   Phone,
-  Linkedin,
-  Github,
   Award,
 } from 'lucide-react';
-import { Profile } from '@/lib/types';
+import { Profile, SocialLink } from '@/lib/types';
 
 interface AboutSectionProps {
   profile?: Profile | null;
+  socials?: SocialLink[];
 }
 
-export default function AboutSection({ profile }: AboutSectionProps) {
-  const email = profile?.email || 'pavaninimmana10@gmail.com';
-  const phone = profile?.phone || '+91-8121082482';
+export default function AboutSection({ profile, socials }: AboutSectionProps) {
 
   const competencies = [
     {
@@ -68,11 +65,10 @@ export default function AboutSection({ profile }: AboutSectionProps) {
             Background & Expertise
           </div>
           <h2 className="text-3xl sm:text-4xl font-extrabold tracking-tight">
-            About <span className="text-gradient">Nimmana Pavani</span>
+            About <span className="text-gradient">{profile?.full_name}</span>
           </h2>
           <p className="text-slate-400 text-sm sm:text-base leading-relaxed">
-            {profile?.long_bio ||
-              'Computer Science Engineering graduate specializing in Cloud Architecture and DevOps automation. AWS Certified Solutions Architect - Associate with hands-on experience in building secure, scalable, and automated cloud deployments.'}
+            {profile?.long_bio}
           </p>
         </div>
 
@@ -80,8 +76,8 @@ export default function AboutSection({ profile }: AboutSectionProps) {
         <div className="mb-12">
           <GlassCard className="bg-gradient-to-r from-slate-900/80 via-slate-800/60 to-slate-900/80 border-cyan-500/20 py-4">
             <div className="flex flex-wrap items-center justify-around gap-4 text-center sm:text-left">
-              <a
-                href={`mailto:${email}`}
+              {profile?.email && <a
+                href={`mailto:${profile.email}`}
                 className="flex items-center gap-2 text-xs sm:text-sm text-slate-300 hover:text-cyan-400 transition-colors"
               >
                 <div className="w-8 h-8 rounded-lg bg-cyan-500/10 flex items-center justify-center text-cyan-400">
@@ -89,12 +85,12 @@ export default function AboutSection({ profile }: AboutSectionProps) {
                 </div>
                 <div>
                   <span className="block text-[10px] text-slate-500 uppercase font-mono">Email</span>
-                  <span className="font-semibold">{email}</span>
+                  <span className="font-semibold">{profile.email}</span>
                 </div>
-              </a>
+              </a>}
 
-              <a
-                href={`tel:${phone.replace(/\s+/g, '')}`}
+              {profile?.phone && <a
+                href={`tel:${profile.phone.replace(/\s+/g, '')}`}
                 className="flex items-center gap-2 text-xs sm:text-sm text-slate-300 hover:text-emerald-400 transition-colors"
               >
                 <div className="w-8 h-8 rounded-lg bg-emerald-500/10 flex items-center justify-center text-emerald-400">
@@ -102,39 +98,27 @@ export default function AboutSection({ profile }: AboutSectionProps) {
                 </div>
                 <div>
                   <span className="block text-[10px] text-slate-500 uppercase font-mono">Phone</span>
-                  <span className="font-semibold">{phone}</span>
+                  <span className="font-semibold">{profile.phone}</span>
                 </div>
-              </a>
+              </a>}
 
-              <a
-                href="https://www.linkedin.com/in/pavani-nimmana-67b989283"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="flex items-center gap-2 text-xs sm:text-sm text-slate-300 hover:text-blue-400 transition-colors"
-              >
-                <div className="w-8 h-8 rounded-lg bg-blue-500/10 flex items-center justify-center text-blue-400">
-                  <Linkedin className="w-4 h-4" />
-                </div>
-                <div>
-                  <span className="block text-[10px] text-slate-500 uppercase font-mono">LinkedIn</span>
-                  <span className="font-semibold">pavani-nimmana</span>
-                </div>
-              </a>
-
-              <a
-                href="https://github.com/Wpavani123"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="flex items-center gap-2 text-xs sm:text-sm text-slate-300 hover:text-cyan-400 transition-colors"
-              >
-                <div className="w-8 h-8 rounded-lg bg-slate-800 flex items-center justify-center text-slate-300">
-                  <Github className="w-4 h-4" />
-                </div>
-                <div>
-                  <span className="block text-[10px] text-slate-500 uppercase font-mono">GitHub</span>
-                  <span className="font-semibold">@Wpavani123</span>
-                </div>
-              </a>
+              {socials?.filter((link) => link.is_visible).map((link) => (
+                <a
+                  key={link.id}
+                  href={link.url}
+                  target={link.url.startsWith('http') ? '_blank' : undefined}
+                  rel={link.url.startsWith('http') ? 'noopener noreferrer' : undefined}
+                  className="flex items-center gap-2 text-xs sm:text-sm text-slate-300 hover:text-cyan-400 transition-colors"
+                >
+                  <div className="w-8 h-8 rounded-lg bg-slate-800 flex items-center justify-center text-cyan-400">
+                    <span aria-hidden="true">{link.platform.slice(0, 1)}</span>
+                  </div>
+                  <div>
+                    <span className="block text-[10px] text-slate-500 uppercase font-mono">{link.platform}</span>
+                    <span className="font-semibold">{link.username || link.url}</span>
+                  </div>
+                </a>
+              ))}
             </div>
           </GlassCard>
         </div>

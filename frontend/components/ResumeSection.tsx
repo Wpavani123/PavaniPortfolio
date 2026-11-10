@@ -12,8 +12,11 @@ interface ResumeSectionProps {
 }
 
 export default function ResumeSection({ resume }: ResumeSectionProps) {
+  if (!resume) return null;
+
   const fileUrl = resolveResumeUrl(resume?.file_url);
-  const updatedDate = resume?.uploaded_at ? formatDate(resume.uploaded_at) : 'October 2026';
+  if (!fileUrl) return null;
+  const updatedDate = resume.uploaded_at ? formatDate(resume.uploaded_at) : 'Not available';
 
   return (
     <section id="resume" className="py-20 relative">
@@ -39,7 +42,7 @@ export default function ResumeSection({ resume }: ResumeSectionProps) {
 
             <div className="space-y-1">
               <h3 className="text-xl font-bold text-slate-100">
-                {resume?.file_name || 'Nimmana_Pavani_Resume.pdf'}
+                {resume.file_name}
               </h3>
               <p className="text-xs text-slate-400 font-mono flex items-center justify-center gap-2">
                 <Calendar className="w-3.5 h-3.5 text-cyan-400" />
@@ -50,7 +53,7 @@ export default function ResumeSection({ resume }: ResumeSectionProps) {
             <div className="flex flex-wrap items-center justify-center gap-4 pt-2">
               <a
                 href={fileUrl}
-                download="Nimmana_Pavani_Resume.pdf"
+                download={resume.file_name}
                 className="flex items-center gap-2 px-6 py-3 rounded-xl bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-400 hover:to-blue-500 text-white font-semibold text-sm shadow-lg shadow-cyan-500/25 transition-all hover:scale-[1.02] active:scale-[0.98]"
               >
                 <Download className="w-4 h-4" />

@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 from app.database.session import get_db
 from app.models.models import LeetCodeProfile, User
@@ -12,10 +12,7 @@ router = APIRouter(prefix="/leetcode", tags=["LeetCode"])
 def get_leetcode_profile(db: Session = Depends(get_db)):
     profile = db.query(LeetCodeProfile).first()
     if not profile:
-        profile = LeetCodeProfile()
-        db.add(profile)
-        db.commit()
-        db.refresh(profile)
+        raise HTTPException(status_code=404, detail="LeetCode profile has not been configured")
     return profile
 
 
