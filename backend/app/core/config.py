@@ -1,3 +1,4 @@
+import json
 import os
 from pathlib import Path
 from typing import List
@@ -36,6 +37,7 @@ class Settings(BaseSettings):
         "http://127.0.0.1:3000",
         "http://localhost:8000",
         "http://127.0.0.1:8000",
+        "https://pavaniportfoio.netlify.app",
     ]
     BACKEND_CORS_ORIGIN_REGEX: str | None = None
 
@@ -45,6 +47,12 @@ class Settings(BaseSettings):
         if value is None:
             return []
         if isinstance(value, str):
+            try:
+                parsed_value = json.loads(value)
+            except json.JSONDecodeError:
+                parsed_value = None
+            if isinstance(parsed_value, list):
+                return parsed_value
             return [item.strip() for item in value.split(",") if item.strip()]
         return value
 

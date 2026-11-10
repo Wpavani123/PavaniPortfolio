@@ -6,13 +6,53 @@ from jose import jwt
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 from main import app
-from app.core.config import settings
+from app.core.config import Settings, settings
 from app.api.deps import get_current_active_admin
 from app.database.bootstrap import ensure_initial_records
 from app.database.session import Base, SessionLocal
 from app.models.models import ContactMessage, Profile, SiteSetting, User
 
 client = TestClient(app)
+NETLIFY_ORIGIN = "https://pavaniportfoio.netlify.app"
+
+
+def test_json_cors_origins_are_parsed_from_render_environment():
+    configured = Settings(
+        BACKEND_CORS_ORIGINS='["http://localhost:3000","https://pavaniportfoio.netlify.app"]'
+    )
+    assert configured.BACKEND_CORS_ORIGINS == [
+        "http://localhost:3000",
+        NETLIFY_ORIGIN,
+    ]
+
+
+def test_netlify_origin_can_read_public_profile():
+    response = client.get(
+        "/api/profile",
+        headers={"Origin": NETLIFY_ORIGIN},
+    )
+
+    assert response.status_code == 200
+    assert response.json()["full_name"]
+    assert response.headers["access-control-allow-origin"] == NETLIFY_ORIGIN
+    assert response.headers["access-control-allow-credentials"] == "true"
+
+
+def test_netlify_origin_cors_preflight():
+    response = client.options(
+        "/api/profile",
+        headers={
+            "Origin": NETLIFY_ORIGIN,
+            "Access-Control-Request-Method": "GET",
+            "Access-Control-Request-Headers": "authorization,content-type",
+        },
+    )
+
+    assert response.status_code == 200
+    assert response.headers["access-control-allow-origin"] == NETLIFY_ORIGIN
+    assert "GET" in response.headers["access-control-allow-methods"]
+    assert "authorization" in response.headers["access-control-allow-headers"]
+    assert "content-type" in response.headers["access-control-allow-headers"]
 
 
 def test_health():
